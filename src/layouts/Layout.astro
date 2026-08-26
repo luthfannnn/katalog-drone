@@ -1,0 +1,844 @@
+---
+import '../styles/global.css';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+
+// Deteksi bahasa dari URL, sama seperti di index.astro
+const lang = Astro.url.pathname.startsWith('/en') ? 'en' : 'id';
+const prefix = lang === 'en' ? '/en' : '';
+
+const navDrones = [
+  { id: "drone-mediterania", name: "Drone Mediterania", price: 15000000 },
+  { id: "drone-signorina", name: "Drone Signorina", price: 18000000 },
+  { id: "drone-sterna", name: "Drone Sterna", price: 12000000 }
+];
+
+// Dictionary / Kamus Data untuk Layout (navbar, drawer keranjang, toast, dll)
+const translations = {
+  id: {
+    brand: "DroneStore",
+    nav: {
+      semuaDrone: "Semua Drone",
+      caraPembelian: "Cara Pembelian",
+      kontak: "Kontak",
+      bukaMenu: "Buka menu",
+      bukaKeranjang: "Buka keranjang"
+    },
+    cart: {
+      title: "Keranjang",
+      tutup: "Tutup",
+      empty: "Keranjang kamu masih kosong.",
+      lastOrderLabel: "Pesanan terakhir",
+      shippedTemplate: "Dikirim {date} via {channel}",
+      kurangiJumlah: "Kurangi jumlah",
+      tambahJumlah: "Tambah jumlah",
+      hapus: "Hapus",
+      total: "Total",
+      checkoutWa: "Checkout via WhatsApp",
+      atau: "ATAU",
+      checkoutEmailLabel: "Checkout via Email",
+      namaPlaceholder: "Nama Anda / Perusahaan",
+      emailPlaceholder: "Email Anda",
+      phonePlaceholder: "Nomor WhatsApp (opsional)",
+      phoneHint: "Untuk follow-up lebih cepat jika email lambat dibalas.",
+      kirimEmail: "Kirim Pesanan ke Email",
+      mengirim: "Mengirim...",
+      errorTitle: "Pesanan gagal terkirim.",
+      errorDesc: "Kemungkinan koneksi bermasalah. Coba lagi, atau langsung chat lewat WhatsApp.",
+      cobaLagi: "Coba lagi"
+    },
+    waPanel: {
+      pendingTitle: "Kami sudah membuka WhatsApp",
+      pendingDescTemplate: "Pesan pesanan ({orderId}) sudah kami siapkan di tab baru. Pastikan kamu benar-benar menekan tombol kirim di WhatsApp sebelum menutupnya.",
+      sudahKirim: "Ya, sudah saya kirim",
+      bukaLagi: "Buka WhatsApp lagi",
+      batal: "Batal, kembali ke keranjang",
+      successTitle: "Pesanan berhasil dicatat",
+      successDescTemplate: "Nomor pesanan {orderId}. Tim kami akan konfirmasi ketersediaan & pembayaran lewat WhatsApp dalam 1×24 jam.",
+      buatBaru: "Buat pesanan baru",
+      emailSuccessTitle: "Pesanan berhasil dikirim",
+      emailSuccessDescTemplate: "Nomor pesanan {orderId}. Kami akan menghubungi Anda ke {email} dalam 1×24 jam untuk konfirmasi ketersediaan & pembayaran.",
+      needFaster: "Butuh respons lebih cepat?",
+      chatWa: "Chat via WhatsApp"
+    },
+    validation: {
+      namaWajib: "Nama wajib diisi.",
+      namaMin: "Nama minimal 3 karakter.",
+      emailWajib: "Email wajib diisi.",
+      emailInvalid: "Format email tidak valid.",
+      phoneInvalid: "Format nomor HP tidak valid (contoh: 08123456789)."
+    },
+    toast: {
+      addedToCartTemplate: "{name} ditambahkan ke keranjang",
+      orderRecorded: "Pesanan berhasil dicatat",
+      orderSent: "Pesanan berhasil dikirim",
+      orderFailed: "Pesanan gagal terkirim"
+    },
+    wa: {
+      greetingTemplate: "Halo, saya ingin memesan drone berikut ({orderId}):",
+      total: "Total Keseluruhan",
+      footer: "Mohon info ketersediaan stok dan cara pembayarannya. Terima kasih!",
+      emailFollowupTemplate: "Halo, saya baru saja mengirim pesanan drone berikut via email ({email}), nomor pesanan {orderId}:",
+      confirmFooter: "Mohon dikonfirmasi ya, terima kasih!"
+    },
+    dateLocale: "id-ID"
+  },
+  en: {
+    brand: "DroneStore",
+    nav: {
+      semuaDrone: "All Drones",
+      caraPembelian: "How to Buy",
+      kontak: "Contact",
+      bukaMenu: "Open menu",
+      bukaKeranjang: "Open cart"
+    },
+    cart: {
+      title: "Cart",
+      tutup: "Close",
+      empty: "Your cart is empty.",
+      lastOrderLabel: "Last order",
+      shippedTemplate: "Sent {date} via {channel}",
+      kurangiJumlah: "Decrease quantity",
+      tambahJumlah: "Increase quantity",
+      hapus: "Remove",
+      total: "Total",
+      checkoutWa: "Checkout via WhatsApp",
+      atau: "OR",
+      checkoutEmailLabel: "Checkout via Email",
+      namaPlaceholder: "Your Name / Company",
+      emailPlaceholder: "Your Email",
+      phonePlaceholder: "WhatsApp Number (optional)",
+      phoneHint: "For a faster follow-up if email replies are slow.",
+      kirimEmail: "Send Order via Email",
+      mengirim: "Sending...",
+      errorTitle: "Order failed to send.",
+      errorDesc: "There might be a connection issue. Try again, or chat directly via WhatsApp.",
+      cobaLagi: "Try again"
+    },
+    waPanel: {
+      pendingTitle: "We've opened WhatsApp",
+      pendingDescTemplate: "Your order message ({orderId}) is ready in a new tab. Make sure you actually press send in WhatsApp before closing it.",
+      sudahKirim: "Yes, I've sent it",
+      bukaLagi: "Open WhatsApp again",
+      batal: "Cancel, back to cart",
+      successTitle: "Order recorded successfully",
+      successDescTemplate: "Order number {orderId}. Our team will confirm availability & payment via WhatsApp within 24 hours.",
+      buatBaru: "Create a new order",
+      emailSuccessTitle: "Order sent successfully",
+      emailSuccessDescTemplate: "Order number {orderId}. We'll contact you at {email} within 24 hours to confirm availability & payment.",
+      needFaster: "Need a faster response?",
+      chatWa: "Chat via WhatsApp"
+    },
+    validation: {
+      namaWajib: "Name is required.",
+      namaMin: "Name must be at least 3 characters.",
+      emailWajib: "Email is required.",
+      emailInvalid: "Invalid email format.",
+      phoneInvalid: "Invalid phone number format (e.g. 08123456789)."
+    },
+    toast: {
+      addedToCartTemplate: "{name} added to cart",
+      orderRecorded: "Order recorded successfully",
+      orderSent: "Order sent successfully",
+      orderFailed: "Order failed to send"
+    },
+    wa: {
+      greetingTemplate: "Hi, I'd like to order the following drone(s) ({orderId}):",
+      total: "Grand Total",
+      footer: "Please let me know stock availability and payment method. Thank you!",
+      emailFollowupTemplate: "Hi, I just sent the following drone order via email ({email}), order number {orderId}:",
+      confirmFooter: "Please confirm, thank you!"
+    },
+    dateLocale: "en-US"
+  }
+};
+
+const t = translations[lang];
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  </head>
+  <body class="bg-white text-ink antialiased font-sans" x-data="cartStore()">
+
+    <!-- Toast Notification (global, di luar drawer) -->
+    <div
+      x-show="toast.show" x-cloak
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0 -translate-y-2"
+      x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0 -translate-y-2"
+      class="fixed top-4 left-1/2 -translate-x-1/2 z-100 max-w-sm w-[92%] sm:w-auto"
+    >
+      <div
+        class="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border text-sm font-medium"
+        :class="toast.type === 'success' ? 'bg-ink text-white border-ink' : 'bg-white text-negative border-negative'"
+      >
+        <svg x-show="toast.type === 'success'" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <svg x-show="toast.type === 'error'" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span x-text="toast.message"></span>
+      </div>
+    </div>
+
+    <!-- Navbar -->
+    <header
+      x-data="{ scrolled: false, mobileMenuOpen: false, droneMenuOpen: false }"
+      @scroll.window="scrolled = window.scrollY > 8"
+      :class="scrolled ? 'shadow-[0_1px_0_0_rgba(0,0,0,0.08)]' : ''"
+      class="bg-white/80 backdrop-blur-xl sticky top-0 z-50 transition-shadow duration-200"
+    >
+      <div class="max-w-6xl mx-auto px-6 h-11 flex items-center">
+        <div class="flex-1">
+          <a href={prefix || '/'} class="text-[14px] font-semibold tracking-tight text-ink hover:opacity-70 transition-opacity duration-150">
+            {t.brand}
+          </a>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-8 h-full">
+
+          <div class="relative h-full flex items-center" @mouseenter="droneMenuOpen = true" @mouseleave="droneMenuOpen = false">
+            <button class="text-[12px] text-ink-soft hover:text-ink transition-colors duration-150" :class="droneMenuOpen ? 'text-ink' : ''">
+              {t.nav.semuaDrone}
+            </button>
+
+            <div
+              x-show="droneMenuOpen" x-cloak
+              x-transition:enter="transition ease-out duration-150"
+              x-transition:enter-start="opacity-0 -translate-y-1"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-100"
+              x-transition:leave-start="opacity-100"
+              x-transition:leave-end="opacity-0"
+              class="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-64"
+            >
+              <div class="bg-white rounded-2xl border border-line shadow-lg overflow-hidden">
+                {navDrones.map((drone) => (
+                  <a href={`${prefix}/#detail-${drone.id}`} class="flex items-center justify-between px-5 py-3.5 hover:bg-mist transition-colors duration-150 border-b border-line last:border-0">
+                    <span class="text-sm font-medium text-ink">{drone.name}</span>
+                    <span class="text-xs text-ink-soft">Rp {drone.price.toLocaleString('id-ID')}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <a href={`${prefix}/#cara-pembelian`} class="text-[12px] text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.caraPembelian}</a>
+          <a href={`${prefix}/#kontak`} class="text-[12px] text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.kontak}</a>
+
+          <div class="flex items-center gap-3 ml-4">
+            <svg class="w-3.5 h-3.5 text-ink-soft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 000 18M12.5 3a17 17 0 010 18" />
+            </svg>
+            <div class="flex items-center gap-1 bg-mist rounded-full p-0.5">
+              <a href="/" class={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors ${lang === 'id' ? 'bg-white text-ink shadow-sm ring-1 ring-black/5' : 'text-ink-soft hover:text-ink'}`}>ID</a>
+              <a href="/en" class={`px-2.5 py-1 text-[11px] font-semibold rounded-full transition-colors ${lang === 'en' ? 'bg-white text-ink shadow-sm ring-1 ring-black/5' : 'text-ink-soft hover:text-ink'}`}>EN</a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="flex-1 flex justify-end items-center gap-4">
+          <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-ink" aria-label={t.nav.bukaMenu}>
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+            </svg>
+          </button>
+
+          <button @click="isOpen = true" class="relative text-ink hover:opacity-60 transition-opacity duration-150" aria-label={t.nav.bukaKeranjang}>
+  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m-3 0h13.5l1.125 12.375a1.125 1.125 0 01-1.121 1.125H5.246a1.125 1.125 0 01-1.121-1.125L5.25 10.5z" />
+  </svg>
+  <span
+    x-show="totalItems > 0" x-cloak
+    class="absolute -top-1.5 -right-2 bg-[#0071e3] text-white text-[10px] leading-none w-4 h-4 flex items-center justify-center rounded-full font-semibold shadow-sm"
+    x-text="totalItems"></span>
+</button>
+        </div>
+      </div>
+
+      <!-- Mobile menu dropdown -->
+      <div
+        x-show="mobileMenuOpen" x-cloak
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0 -translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        @click.outside="mobileMenuOpen = false"
+        class="md:hidden border-t border-line bg-white px-6 py-4 flex flex-col gap-4"
+      >
+        <p class="text-[11px] font-medium text-ink-soft uppercase tracking-wider">{t.nav.semuaDrone}</p>
+        {navDrones.map((drone) => (
+          <a href={`${prefix}/#detail-${drone.id}`} @click="mobileMenuOpen = false" class="text-sm text-ink-soft hover:text-ink transition-colors duration-150 pl-2">{drone.name}</a>
+        ))}
+
+        <div class="h-px bg-line my-1"></div>
+
+        <a href={`${prefix}/#cara-pembelian`} @click="mobileMenuOpen = false" class="text-sm text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.caraPembelian}</a>
+        <a href={`${prefix}/#kontak`} @click="mobileMenuOpen = false" class="text-sm text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.kontak}</a>
+
+        <div class="h-px bg-line my-1"></div>
+
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-ink-soft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 000 18M12.5 3a17 17 0 010 18" />
+          </svg>
+          <a href="/" class={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${lang === 'id' ? 'bg-ink text-white' : 'bg-mist text-ink-soft'}`}>ID</a>
+          <a href="/en" class={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${lang === 'en' ? 'bg-ink text-white' : 'bg-mist text-ink-soft'}`}>EN</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="max-w-6xl mx-auto px-6 py-10">
+      <slot />
+    </main>
+
+    
+
+    <!-- Drawer Keranjang -->
+    <div x-show="isOpen" x-cloak class="fixed inset-0 z-50 overflow-hidden">
+      <div
+        x-show="isOpen"
+        x-transition:enter="transition-opacity ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @click="closeDrawer()"
+        class="absolute inset-0 bg-black/30"></div>
+
+      <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+        <div
+          x-show="isOpen"
+          x-transition:enter="transform transition ease-out duration-300"
+          x-transition:enter-start="translate-x-full"
+          x-transition:enter-end="translate-x-0"
+          x-transition:leave="transform transition ease-in duration-200"
+          x-transition:leave-start="translate-x-0"
+          x-transition:leave-end="translate-x-full"
+          class="w-screen sm:w-[70vw] sm:max-w-2xl bg-white flex flex-col">
+
+          <div class="px-6 py-5 border-b border-line flex justify-between items-center">
+            <h2 class="text-[17px] font-semibold text-ink" x-text="i18n.cart.title"></h2>
+            <button @click="closeDrawer()" class="text-ink-soft hover:text-ink transition" :aria-label="i18n.cart.tutup">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- MODE: keranjang normal (belum checkout / belum sukses) -->
+          <template x-if="waState === 'idle' && emailStatus !== 'success'">
+            <div class="flex-1 flex flex-col overflow-hidden">
+
+              <div class="px-6 py-5 flex-1 overflow-y-auto space-y-4">
+                <template x-if="items.length === 0 && !lastOrder">
+                  <div class="text-center text-ink-soft py-20">
+                    <svg class="w-8 h-8 mx-auto mb-4 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m-3 0h13.5l1.125 12.375a1.125 1.125 0 01-1.121 1.125H5.246a1.125 1.125 0 01-1.121-1.125L5.25 10.5z" />
+                    </svg>
+                    <p class="text-sm" x-text="i18n.cart.empty"></p>
+                  </div>
+                </template>
+
+                <!-- Info pesanan terakhir, muncul saat cart kosong tapi pernah checkout -->
+                <template x-if="items.length === 0 && lastOrder">
+                  <div class="text-center py-16 space-y-3">
+                    <svg class="w-8 h-8 mx-auto opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m-3 0h13.5l1.125 12.375a1.125 1.125 0 01-1.121 1.125H5.246a1.125 1.125 0 01-1.121-1.125L5.25 10.5z" />
+                    </svg>
+                    <p class="text-sm text-ink-soft" x-text="i18n.cart.empty"></p>
+                    <div class="inline-block bg-mist rounded-xl px-4 py-3 text-left">
+                      <p class="text-xs text-ink-soft" x-text="i18n.cart.lastOrderLabel"></p>
+                      <p class="text-sm font-medium text-ink" x-text="lastOrder.id"></p>
+                      <p class="text-xs text-ink-soft mt-0.5" x-text="i18n.cart.shippedTemplate.replace('{date}', lastOrder.date).replace('{channel}', lastOrder.channel)"></p>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-for="item in items" :key="item.id">
+                  <div class="flex justify-between items-center py-3 border-b border-line last:border-0">
+                    <div>
+                      <h4 class="text-sm font-medium text-ink" x-text="item.name"></h4>
+                      <p class="text-xs text-ink-soft mt-0.5" x-text="'Rp ' + item.price.toLocaleString('id-ID')"></p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                      <div class="flex items-center gap-1 border border-line rounded-full px-1 py-1">
+                        <button
+                          @click="decreaseQty(item.id)"
+                          class="w-6 h-6 flex items-center justify-center rounded-full text-ink-soft hover:bg-mist hover:text-ink transition"
+                          :aria-label="i18n.cart.kurangiJumlah">
+                          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M5 12h14" /></svg>
+                        </button>
+                        <span class="text-sm text-ink w-5 text-center tabular-nums" x-text="item.qty"></span>
+                        <button
+                          @click="increaseQty(item.id)"
+                          :disabled="item.qty >= 10"
+                          class="w-6 h-6 flex items-center justify-center rounded-full text-ink-soft hover:bg-mist hover:text-ink disabled:opacity-30 disabled:hover:bg-transparent transition"
+                          :aria-label="i18n.cart.tambahJumlah">
+                          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
+                        </button>
+                      </div>
+                      <button @click="removeItem(item.id)" class="text-xs text-ink-soft hover:text-negative transition" x-text="i18n.cart.hapus"></button>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Footer & Checkout -->
+              <div x-ref="drawerFooter" class="px-6 py-6 border-t border-line overflow-y-auto max-h-[62vh] space-y-5">
+                <div class="flex justify-between items-baseline">
+                  <span class="text-sm text-ink-soft" x-text="i18n.cart.total"></span>
+                  <span class="text-lg font-semibold text-ink" x-text="'Rp ' + totalPrice.toLocaleString('id-ID')"></span>
+                </div>
+
+                <button
+                  @click="checkoutWhatsApp"
+                  :disabled="items.length === 0 || isSubmitting"
+                  class="w-full bg-ink hover:bg-black disabled:bg-line disabled:text-ink-soft disabled:cursor-not-allowed text-white py-3.5 rounded-full font-medium text-[15px] text-center transition-colors duration-150 flex justify-center items-center gap-2">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.5 0-2.91-.31-4.14-.87L3 20l1.05-3.15A7.93 7.93 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <span x-text="i18n.cart.checkoutWa"></span>
+                </button>
+
+                <div class="flex items-center gap-3">
+                  <div class="h-px bg-line flex-1"></div>
+                  <span class="text-[11px] text-ink-soft tracking-wide" x-text="i18n.cart.atau"></span>
+                  <div class="h-px bg-line flex-1"></div>
+                </div>
+
+                <div class="space-y-3">
+                  <p class="text-[11px] font-medium text-ink-soft uppercase tracking-wider" x-text="i18n.cart.checkoutEmailLabel"></p>
+
+                  <div class="space-y-3">
+                    <div>
+                      <input
+                        type="text"
+                        x-model="customerName"
+                        :placeholder="i18n.cart.namaPlaceholder"
+                        :class="emailErrors.name ? 'border-negative' : 'border-line focus:border-ink'"
+                        class="w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white outline-none transition-colors">
+                      <p x-show="emailErrors.name" x-cloak x-text="emailErrors.name" class="text-xs text-negative mt-1 ml-1"></p>
+                    </div>
+
+                    <div>
+                      <input
+                        type="email"
+                        x-model="customerEmail"
+                        :placeholder="i18n.cart.emailPlaceholder"
+                        :class="emailErrors.email ? 'border-negative' : 'border-line focus:border-ink'"
+                        class="w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white outline-none transition-colors">
+                      <p x-show="emailErrors.email" x-cloak x-text="emailErrors.email" class="text-xs text-negative mt-1 ml-1"></p>
+                    </div>
+
+                    <div>
+                      <input
+                        type="tel"
+                        x-model="customerPhone"
+                        :placeholder="i18n.cart.phonePlaceholder"
+                        :class="emailErrors.phone ? 'border-negative' : 'border-line focus:border-ink'"
+                        class="w-full px-3.5 py-2.5 border rounded-xl text-sm bg-white outline-none transition-colors">
+                      <p x-show="emailErrors.phone" x-cloak x-text="emailErrors.phone" class="text-xs text-negative mt-1 ml-1"></p>
+                      <p class="text-[11px] text-ink-soft mt-1 ml-1" x-text="i18n.cart.phoneHint"></p>
+                    </div>
+
+                    <button
+                      @click="checkoutWeb3Forms"
+                      :disabled="isSubmitting || items.length === 0"
+                      class="w-full border border-ink text-ink hover:bg-ink hover:text-white disabled:border-line disabled:text-ink-soft disabled:hover:bg-transparent py-3 rounded-full font-medium text-sm text-center transition-colors duration-150 flex justify-center items-center gap-2">
+                      <template x-if="!isSubmitting">
+                        <span class="flex items-center gap-2">
+                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                          </svg>
+                          <span x-text="i18n.cart.kirimEmail"></span>
+                        </span>
+                      </template>
+                      <template x-if="isSubmitting">
+                        <span class="flex items-center gap-2">
+                          <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                          </svg>
+                          <span x-text="i18n.cart.mengirim"></span>
+                        </span>
+                      </template>
+                    </button>
+
+                    <div x-show="emailStatus === 'error'" x-cloak x-transition class="bg-negative-soft rounded-xl p-4 text-sm space-y-2.5">
+                      <p class="text-negative font-medium" x-text="i18n.cart.errorTitle"></p>
+                      <p class="text-ink-soft text-xs leading-relaxed" x-text="i18n.cart.errorDesc"></p>
+                      <div class="flex gap-2 pt-1">
+                        <button @click="checkoutWeb3Forms" class="text-xs font-medium text-ink bg-white border border-line px-3 py-1.5 rounded-full hover:border-ink transition" x-text="i18n.cart.cobaLagi">
+                        </button>
+                        <button @click="checkoutWhatsApp" class="text-xs font-medium text-white bg-ink hover:bg-black px-3 py-1.5 rounded-full transition" x-text="i18n.cart.checkoutWa">
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- MODE: panel konfirmasi besar (pending WA / sukses) -->
+          <template x-if="waState !== 'idle' || emailStatus === 'success'">
+            <div class="flex-1 flex flex-col items-center justify-center px-10 sm:px-16 py-12 text-center overflow-y-auto">
+
+              <!-- STATE: menunggu konfirmasi WhatsApp terkirim -->
+              <template x-if="waState === 'pending'">
+                <div class="max-w-md w-full space-y-6">
+                  <svg class="w-20 h-20 mx-auto text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.5 0-2.91-.31-4.14-.87L3 20l1.05-3.15A7.93 7.93 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <div class="space-y-3">
+                    <p class="font-semibold text-ink text-2xl" x-text="i18n.waPanel.pendingTitle"></p>
+                    <p class="text-base text-ink-soft leading-relaxed" x-text="i18n.waPanel.pendingDescTemplate.replace('{orderId}', currentOrderId)"></p>
+                  </div>
+
+                  <div class="space-y-3 pt-2 max-w-xs mx-auto">
+                    <button @click="confirmWhatsappSent" class="w-full bg-ink hover:bg-black text-white py-4 rounded-full font-medium text-base transition-colors duration-150" x-text="i18n.waPanel.sudahKirim">
+                    </button>
+                    <button @click="checkoutWhatsApp" class="w-full text-sm text-ink-soft underline hover:text-ink" x-text="i18n.waPanel.bukaLagi">
+                    </button>
+                    <button @click="cancelWhatsappConfirm" class="w-full text-sm text-ink-soft hover:text-ink" x-text="i18n.waPanel.batal">
+                    </button>
+                  </div>
+                </div>
+              </template>
+
+              <!-- STATE: WhatsApp dikonfirmasi terkirim -->
+              <template x-if="waState === 'success'">
+                <div x-transition class="max-w-md w-full space-y-6">
+                  <svg class="w-24 h-24 mx-auto text-positive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div class="space-y-3">
+                    <p class="font-semibold text-ink text-2xl" x-text="i18n.waPanel.successTitle"></p>
+                    <p class="text-base text-ink-soft leading-relaxed" x-text="i18n.waPanel.successDescTemplate.replace('{orderId}', currentOrderId)"></p>
+                  </div>
+                  <button @click="resetCheckoutState" class="text-sm text-ink-soft underline hover:text-ink" x-text="i18n.waPanel.buatBaru">
+                  </button>
+                </div>
+              </template>
+
+              <!-- STATE: email berhasil -->
+              <template x-if="emailStatus === 'success'">
+                <div x-transition class="max-w-md w-full space-y-6">
+                  <svg class="w-24 h-24 mx-auto text-positive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div class="space-y-3">
+                    <p class="font-semibold text-ink text-2xl" x-text="i18n.waPanel.emailSuccessTitle"></p>
+                    <p class="text-base text-ink-soft leading-relaxed" x-text="i18n.waPanel.emailSuccessDescTemplate.replace('{orderId}', currentOrderId).replace('{email}', lastSubmittedEmail)"></p>
+                    <p class="text-sm text-ink-soft pt-1">
+                      <span x-text="i18n.waPanel.needFaster"></span>
+                      <button @click="checkoutWhatsApp" class="text-accent font-medium" x-text="i18n.waPanel.chatWa"></button>
+                    </p>
+                  </div>
+                  <button @click="resetCheckoutState" class="text-sm text-ink-soft underline hover:text-ink" x-text="i18n.waPanel.buatBaru">
+                  </button>
+                </div>
+              </template>
+
+            </div>
+          </template>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Logika Alpine.js -->
+    <script define:vars={{ i18n: t }}>
+      document.addEventListener('alpine:init', () => {
+        Alpine.data('cartStore', () => ({
+          isOpen: false,
+          isSubmitting: false,
+          customerName: '',
+          customerEmail: '',
+          customerPhone: '',
+          items: JSON.parse(localStorage.getItem('cart_drone')) || [],
+
+          i18n: i18n,
+
+          // waState: 'idle' | 'pending' | 'success'
+          waState: 'idle',
+          emailStatus: 'idle', // 'idle' | 'sending' | 'success' | 'error'
+          emailErrors: { name: '', email: '', phone: '' },
+          lastSubmittedEmail: '',
+          lastOrderMessage: '',
+          currentOrderId: null,
+          lastOrder: JSON.parse(localStorage.getItem('last_order_drone')) || null,
+
+          toast: { show: false, message: '', type: 'success' },
+          _toastTimeout: null,
+
+          get totalItems() {
+            return this.items.reduce((sum, item) => sum + item.qty, 0);
+          },
+
+          get totalPrice() {
+            return this.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+          },
+
+          showToast(message, type = 'success') {
+            clearTimeout(this._toastTimeout);
+            this.toast = { show: true, message, type };
+            this._toastTimeout = setTimeout(() => {
+              this.toast.show = false;
+            }, 3000);
+          },
+
+          scrollFooterToTop() {
+            this.$nextTick(() => {
+              if (this.$refs.drawerFooter) {
+                this.$refs.drawerFooter.scrollTop = 0;
+              }
+            });
+          },
+
+          generateOrderId() {
+            const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+            return 'ORD-' + Date.now().toString(36).toUpperCase() + rand;
+          },
+
+          add(product) {
+            // Kalau drawer masih menampilkan layar sukses dari pesanan
+            // sebelumnya, anggap ini pesanan baru dan bersihkan state-nya.
+            if (this.waState === 'success' || this.emailStatus === 'success') {
+              this.resetCheckoutState();
+            }
+
+            let existing = this.items.find(i => i.id === product.id);
+            if (existing) {
+              existing.qty++;
+            } else {
+              this.items.push({ ...product, qty: 1 });
+            }
+            this.save();
+            this.isOpen = true;
+            this.showToast(this.i18n.toast.addedToCartTemplate.replace('{name}', product.name), 'success');
+          },
+
+          closeDrawer() {
+            this.isOpen = false;
+            // Reset layar sukses setelah ditutup, supaya saat dibuka lagi
+            // user langsung lihat keranjang normal, bukan layar sukses lama.
+            if (this.waState === 'success' || this.emailStatus === 'success') {
+              this.resetCheckoutState();
+            }
+          },
+
+          removeItem(id) {
+            this.items = this.items.filter(i => i.id !== id);
+            this.save();
+          },
+
+          increaseQty(id) {
+            const item = this.items.find(i => i.id === id);
+            if (item && item.qty < 10) {
+              item.qty++;
+              this.save();
+            }
+          },
+
+          decreaseQty(id) {
+            const item = this.items.find(i => i.id === id);
+            if (!item) return;
+            if (item.qty <= 1) {
+              this.removeItem(id);
+            } else {
+              item.qty--;
+              this.save();
+            }
+          },
+
+          save() {
+            localStorage.setItem('cart_drone', JSON.stringify(this.items));
+          },
+
+          saveLastOrder(channel) {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString(this.i18n.dateLocale, { day: 'numeric', month: 'long', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString(this.i18n.dateLocale, { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
+            this.lastOrder = {
+              id: this.currentOrderId,
+              date: `${dateStr}, ${timeStr} WIB`,
+              channel
+            };
+            localStorage.setItem('last_order_drone', JSON.stringify(this.lastOrder));
+          },
+
+          buildWhatsappMessage() {
+            let text = this.i18n.wa.greetingTemplate.replace('{orderId}', this.currentOrderId) + '\n\n';
+            this.items.forEach((item, index) => {
+              text += `${index + 1}. ${item.name} (${item.qty}x) - Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n`;
+            });
+            text += `\n*${this.i18n.wa.total}: Rp ${this.totalPrice.toLocaleString('id-ID')}*`;
+            text += `\n\n${this.i18n.wa.footer}`;
+            return text;
+          },
+
+          checkoutWhatsApp() {
+            let phone = "62881023652391";
+            let text;
+
+            if (this.items.length > 0) {
+              if (!this.currentOrderId) {
+                this.currentOrderId = this.generateOrderId();
+              }
+              text = this.buildWhatsappMessage();
+              this.lastOrderMessage = text;
+            } else if (this.lastOrderMessage) {
+              text = this.lastOrderMessage;
+            } else {
+              return;
+            }
+
+            let encoded = encodeURIComponent(text);
+            window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+
+            if (this.items.length > 0) {
+              this.waState = 'pending';
+              this.scrollFooterToTop();
+            }
+          },
+
+          confirmWhatsappSent() {
+            this.saveLastOrder('WhatsApp');
+            this.items = [];
+            this.save();
+            this.waState = 'success';
+            this.scrollFooterToTop();
+            this.showToast(this.i18n.toast.orderRecorded, 'success');
+          },
+
+          cancelWhatsappConfirm() {
+            this.waState = 'idle';
+          },
+
+          resetCheckoutState() {
+            this.waState = 'idle';
+            this.emailStatus = 'idle';
+            this.currentOrderId = null;
+            this.customerName = '';
+            this.customerEmail = '';
+            this.customerPhone = '';
+            this.emailErrors = { name: '', email: '', phone: '' };
+            this.lastOrderMessage = '';
+          },
+
+          validateEmailForm() {
+            this.emailErrors = { name: '', email: '', phone: '' };
+            let valid = true;
+
+            if (!this.customerName.trim()) {
+              this.emailErrors.name = this.i18n.validation.namaWajib;
+              valid = false;
+            } else if (this.customerName.trim().length < 3) {
+              this.emailErrors.name = this.i18n.validation.namaMin;
+              valid = false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!this.customerEmail.trim()) {
+              this.emailErrors.email = this.i18n.validation.emailWajib;
+              valid = false;
+            } else if (!emailRegex.test(this.customerEmail.trim())) {
+              this.emailErrors.email = this.i18n.validation.emailInvalid;
+              valid = false;
+            }
+
+            if (this.customerPhone.trim()) {
+              const phoneRegex = /^(\+62|62|0)8[0-9]{8,12}$/;
+              const cleanedPhone = this.customerPhone.trim().replace(/[\s-]/g, '');
+              if (!phoneRegex.test(cleanedPhone)) {
+                this.emailErrors.phone = this.i18n.validation.phoneInvalid;
+                valid = false;
+              }
+            }
+
+            return valid;
+          },
+
+          async checkoutWeb3Forms() {
+            if (this.items.length === 0) return;
+            if (!this.validateEmailForm()) return;
+
+            if (!this.currentOrderId) {
+              this.currentOrderId = this.generateOrderId();
+            }
+
+            this.isSubmitting = true;
+            this.emailStatus = 'sending';
+
+            let orderDetails = "";
+            this.items.forEach((item, index) => {
+              orderDetails += `${index + 1}. ${item.name} (${item.qty}x) - Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n`;
+            });
+
+            const formData = {
+              access_key: "7d899f37-b1be-4f36-8f21-0c733a7dff6c",
+              subject: "Pesanan Baru dari " + this.customerName + " (" + this.currentOrderId + ")",
+              from_name: "Web Katalog Drone",
+              replyto: this.customerEmail,
+              message: `Nomor Pesanan: ${this.currentOrderId}\n\nDetail Pemesan:\nNama: ${this.customerName}\nEmail: ${this.customerEmail}\nNo. HP: ${this.customerPhone || '-'}\n\nDetail Pesanan:\n${orderDetails}\nTotal Tagihan: Rp ${this.totalPrice.toLocaleString('id-ID')}`
+            };
+
+            try {
+              const response = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
+              });
+
+              const result = await response.json();
+
+              if (result.success) {
+                this.lastSubmittedEmail = this.customerEmail;
+                this.lastOrderMessage = `${this.i18n.wa.emailFollowupTemplate.replace('{email}', this.customerEmail).replace('{orderId}', this.currentOrderId)}\n\n${orderDetails}\n*${this.i18n.wa.total}: Rp ${this.totalPrice.toLocaleString('id-ID')}*\n\n${this.i18n.wa.confirmFooter}`;
+                this.saveLastOrder('Email');
+                this.emailStatus = 'success';
+                this.items = [];
+                this.save();
+                this.scrollFooterToTop();
+                this.showToast(this.i18n.toast.orderSent, 'success');
+              } else {
+                this.emailStatus = 'error';
+                this.showToast(this.i18n.toast.orderFailed, 'error');
+              }
+            } catch (error) {
+              this.emailStatus = 'error';
+              this.showToast(this.i18n.toast.orderFailed, 'error');
+            } finally {
+              this.isSubmitting = false;
+            }
+          }
+        }));
+      });
+    </script>
+  </body>
+</html>

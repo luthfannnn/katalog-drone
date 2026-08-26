@@ -1,0 +1,105 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProductStage from '../components/ProductStage.astro';
+const lang = Astro.url.pathname.startsWith('/en') ? 'en' : 'id';
+
+const translations = {
+  id: {
+    kembali: "Kembali ke katalog",
+    masukkanKeranjang: "Masukkan Keranjang",
+    spesifikasiTeknis: "Spesifikasi Teknis",
+    drone: {
+      id: "drone-vtol",
+      name: "Drone VTOL",
+      price: 15000000,
+      image: "/images/drone-vtol.png",
+      desc: "Drone bertipe fixed-wing (bersayap tetap) yang ditambahkan baling-baling kecil (quadcopter) untuk kemampuan lepas landas dan mendarat secara vertikal (Vertical Take-Off and Landing).",
+      specs: [
+        "Berat: -",
+        "Kamera: -",
+        "Waktu Terbang: -",
+        "Sensor Tabrak: -",
+        "Jarak Transmisi: -"
+      ]
+    }
+  },
+  en: {
+    kembali: "Back to catalog",
+    masukkanKeranjang: "Add to Cart",
+    spesifikasiTeknis: "Technical Specifications",
+    drone: {
+      id: "drone-vtol",
+      name: "Drone VTOL",
+      price: 15000000,
+      image: "/images/drone-vtol.png",
+      desc: "This fixed-wing drone is equipped with additional small propellers that provide vertical take-off and landing capabilities (VTOL - Vertical Take-Off and Landing).",
+      specs: [
+        "Weight: -",
+        "Camera: -",
+        "Flight Time: -",
+        "Collision Sensor: -",
+        "Transmission Range: -"
+      ]
+    }
+  }
+};
+
+const t = translations[lang];
+const drone = t.drone;
+const prefix = lang === 'en' ? '/en' : '';
+---
+
+<Layout title={`${drone.name} - DroneStore`}>
+
+  <div class="mb-8">
+    <a href={prefix || '/'} class="text-sm text-ink-soft hover:text-ink font-medium flex items-center gap-1.5 w-fit transition-colors">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      {t.kembali}
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
+
+    <div class="rounded-2xl overflow-hidden md:sticky md:top-24">
+      <ProductStage image={drone.image} alt={drone.name} />
+    </div>
+
+    <div class="py-2">
+      <h1 class="text-3xl md:text-[40px] font-semibold text-ink mb-3 tracking-tight leading-tight">{drone.name}</h1>
+
+      <div class="text-2xl font-semibold text-ink mb-6">
+        Rp {drone.price.toLocaleString('id-ID')}
+      </div>
+
+      <p class="text-ink-soft text-base leading-relaxed mb-10">
+        {drone.desc}
+      </p>
+
+      <button
+        @click={`add({ id: '${drone.id}', name: '${drone.name}', price: ${drone.price} })`}
+        class="w-full md:w-auto bg-ink hover:bg-black text-white px-10 py-3.5 rounded-full text-[15px] font-medium transition-colors duration-150 mb-12">
+        {t.masukkanKeranjang}
+      </button>
+
+      <div>
+        <h3 class="text-[11px] font-medium text-ink-soft uppercase tracking-wider mb-1">{t.spesifikasiTeknis}</h3>
+        <div class="border-t border-line">
+          {drone.specs.map((spec) => {
+            const [label, ...rest] = spec.split(':');
+            const value = rest.join(':').trim();
+            return (
+              <div class="flex justify-between items-center py-4 border-b border-line">
+                <span class="text-sm text-ink-soft">{label.trim()}</span>
+                <span class="text-sm font-medium text-ink text-right">{value}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</Layout>
