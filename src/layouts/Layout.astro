@@ -13,9 +13,9 @@ const lang = Astro.url.pathname.startsWith('/en') ? 'en' : 'id';
 const prefix = lang === 'en' ? '/en' : '';
 
 const navDrones = [
-  { id: "drone-mediterania", name: "Drone Mediterania", price: 15000000 },
-  { id: "drone-signorina", name: "Drone Signorina", price: 18000000 },
-  { id: "drone-sterna", name: "Drone Sterna", price: 12000000 }
+  { id: "drone-mediterania", name: "Drone Mediterania", price: 0 },
+  { id: "drone-signorina", name: "Drone Signorina", price: 0 },
+  { id: "drone-sterna", name: "Drone Sterna", price: 0 }
 ];
 
 // Dictionary / Kamus Data untuk Layout (navbar, drawer keranjang, toast, dll)
@@ -27,7 +27,8 @@ const translations = {
       caraPembelian: "Cara Pembelian",
       kontak: "Kontak",
       bukaMenu: "Buka menu",
-      bukaKeranjang: "Buka keranjang"
+      bukaKeranjang: "Buka keranjang",
+      hubungiHarga: "Hubungi kami"
     },
     cart: {
       title: "Keranjang",
@@ -95,7 +96,8 @@ const translations = {
       caraPembelian: "How to Buy",
       kontak: "Contact",
       bukaMenu: "Open menu",
-      bukaKeranjang: "Open cart"
+      bukaKeranjang: "Open cart",
+      hubungiHarga: "Contact for price"
     },
     cart: {
       title: "Cart",
@@ -235,7 +237,9 @@ const t = translations[lang];
                 {navDrones.map((drone) => (
                   <a href={`${prefix}/#detail-${drone.id}`} class="flex items-center justify-between px-5 py-3.5 hover:bg-mist transition-colors duration-150 border-b border-line last:border-0">
                     <span class="text-sm font-medium text-ink">{drone.name}</span>
-                    <span class="text-xs text-ink-soft">Rp {drone.price.toLocaleString('id-ID')}</span>
+                    <span class="text-xs text-ink-soft">
+                      {drone.price > 0 ? `Rp ${drone.price.toLocaleString('id-ID')}` : t.nav.hubungiHarga}
+                    </span>
                   </a>
                 ))}
               </div>
