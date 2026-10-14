@@ -12,10 +12,21 @@ const { title } = Astro.props;
 const lang = Astro.url.pathname.startsWith('/en') ? 'en' : 'id';
 const prefix = lang === 'en' ? '/en' : '';
 
+// Flag untuk menampilkan / menyembunyikan menu Software di navbar.
+// Ubah menjadi true jika ingin ditampilkan kembali (samakan dengan index.astro).
+const showSoftware = false;
+
 const navDrones = [
-  { id: "drone-mediterania", name: "Drone Mediterania", price: 0 },
-  { id: "drone-signorina", name: "Drone Signorina", price: 0 },
-  { id: "drone-sterna", name: "Drone Sterna", price: 0 }
+  { id: "drone-mediterania", name: "Drone Mediterania" },
+  { id: "drone-signorina", name: "Drone Signorina" },
+  { id: "drone-sterna", name: "Drone Sterna" },
+  { id: "drone-vtol", name: lang === 'en' ? "VTOL Drone" : "Drone VTOL" }
+];
+
+const navSoftware = [
+  { id: "software-fleet-management", name: "Fleet Management Dashboard" },
+  { id: "software-delivery-tracking", name: "Delivery Tracking System" },
+  { id: "software-flight-time-calculator", name: "Flight Time Calculator" }
 ];
 
 // Dictionary / Kamus Data untuk Layout (navbar, drawer keranjang, toast, dll)
@@ -24,6 +35,8 @@ const translations = {
     brand: "DroneStore",
     nav: {
       semuaDrone: "Semua Drone",
+      semuaSoftware: "Semua Software",
+      comingSoon: "Segera hadir",
       caraPembelian: "Cara Pembelian",
       kontak: "Kontak",
       bukaMenu: "Buka menu",
@@ -39,7 +52,6 @@ const translations = {
       kurangiJumlah: "Kurangi jumlah",
       tambahJumlah: "Tambah jumlah",
       hapus: "Hapus",
-      total: "Total",
       checkoutWa: "Checkout via WhatsApp",
       atau: "ATAU",
       checkoutEmailLabel: "Checkout via Email",
@@ -82,7 +94,6 @@ const translations = {
     },
     wa: {
       greetingTemplate: "Halo, saya ingin memesan drone berikut ({orderId}):",
-      total: "Total Keseluruhan",
       footer: "Mohon info ketersediaan stok dan cara pembayarannya. Terima kasih!",
       emailFollowupTemplate: "Halo, saya baru saja mengirim pesanan drone berikut via email ({email}), nomor pesanan {orderId}:",
       confirmFooter: "Mohon dikonfirmasi ya, terima kasih!"
@@ -93,6 +104,8 @@ const translations = {
     brand: "DroneStore",
     nav: {
       semuaDrone: "All Drones",
+      semuaSoftware: "All Software",
+      comingSoon: "Coming soon",
       caraPembelian: "How to Buy",
       kontak: "Contact",
       bukaMenu: "Open menu",
@@ -108,7 +121,6 @@ const translations = {
       kurangiJumlah: "Decrease quantity",
       tambahJumlah: "Increase quantity",
       hapus: "Remove",
-      total: "Total",
       checkoutWa: "Checkout via WhatsApp",
       atau: "OR",
       checkoutEmailLabel: "Checkout via Email",
@@ -151,7 +163,6 @@ const translations = {
     },
     wa: {
       greetingTemplate: "Hi, I'd like to order the following drone(s) ({orderId}):",
-      total: "Grand Total",
       footer: "Please let me know stock availability and payment method. Thank you!",
       emailFollowupTemplate: "Hi, I just sent the following drone order via email ({email}), order number {orderId}:",
       confirmFooter: "Please confirm, thank you!"
@@ -204,7 +215,7 @@ const t = translations[lang];
 
     <!-- Navbar -->
     <header
-      x-data="{ scrolled: false, mobileMenuOpen: false, droneMenuOpen: false }"
+      x-data="{ scrolled: false, mobileMenuOpen: false, droneMenuOpen: false, softwareMenuOpen: false }"
       @scroll.window="scrolled = window.scrollY > 8"
       :class="scrolled ? 'shadow-[0_1px_0_0_rgba(0,0,0,0.08)]' : ''"
       class="bg-white/80 backdrop-blur-xl sticky top-0 z-50 transition-shadow duration-200"
@@ -235,16 +246,44 @@ const t = translations[lang];
             >
               <div class="bg-white rounded-2xl border border-line shadow-lg overflow-hidden">
                 {navDrones.map((drone) => (
-                  <a href={`${prefix}/#detail-${drone.id}`} class="flex items-center justify-between px-5 py-3.5 hover:bg-mist transition-colors duration-150 border-b border-line last:border-0">
+                  <a href={`${prefix}/#detail-${drone.id}`} class="flex items-center px-5 py-3.5 hover:bg-mist transition-colors duration-150 border-b border-line last:border-0">
                     <span class="text-sm font-medium text-ink">{drone.name}</span>
-                    <span class="text-xs text-ink-soft">
-                      {drone.price > 0 ? `Rp ${drone.price.toLocaleString('id-ID')}` : t.nav.hubungiHarga}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Menu Semua Software (disembunyikan sementara, ubah showSoftware = true di atas untuk menampilkan) */}
+          {showSoftware && (
+          <div class="relative h-full flex items-center" @mouseenter="softwareMenuOpen = true" @mouseleave="softwareMenuOpen = false">
+            <button class="text-[12px] text-ink-soft hover:text-ink transition-colors duration-150" :class="softwareMenuOpen ? 'text-ink' : ''">
+              {t.nav.semuaSoftware}
+            </button>
+
+            <div
+              x-show="softwareMenuOpen" x-cloak
+              x-transition:enter="transition ease-out duration-150"
+              x-transition:enter-start="opacity-0 -translate-y-1"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-100"
+              x-transition:leave-start="opacity-100"
+              x-transition:leave-end="opacity-0"
+              class="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-72"
+            >
+              <div class="bg-white rounded-2xl border border-line shadow-lg overflow-hidden">
+                {navSoftware.map((sw) => (
+                  <a href={`${prefix}/#detail-${sw.id}`} class="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-mist transition-colors duration-150 border-b border-line last:border-0">
+                    <span class="text-sm font-medium text-ink">{sw.name}</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-mist px-2 py-1 rounded-full shrink-0">
+                      {t.nav.comingSoon}
                     </span>
                   </a>
                 ))}
               </div>
             </div>
           </div>
+          )}
 
           <a href={`${prefix}/#cara-pembelian`} class="text-[12px] text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.caraPembelian}</a>
           <a href={`${prefix}/#kontak`} class="text-[12px] text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.kontak}</a>
@@ -294,6 +333,23 @@ const t = translations[lang];
         ))}
 
         <div class="h-px bg-line my-1"></div>
+
+        {/* Menu Semua Software versi mobile (disembunyikan sementara, ikut flag showSoftware) */}
+        {showSoftware && (
+          <Fragment>
+            <p class="text-[11px] font-medium text-ink-soft uppercase tracking-wider">{t.nav.semuaSoftware}</p>
+            {navSoftware.map((sw) => (
+              <a href={`${prefix}/#detail-${sw.id}`} @click="mobileMenuOpen = false" class="text-sm text-ink-soft hover:text-ink transition-colors duration-150 pl-2 flex items-center justify-between gap-2">
+                <span>{sw.name}</span>
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-ink-soft bg-mist px-2 py-1 rounded-full shrink-0">
+                  {t.nav.comingSoon}
+                </span>
+              </a>
+            ))}
+
+            <div class="h-px bg-line my-1"></div>
+          </Fragment>
+        )}
 
         <a href={`${prefix}/#cara-pembelian`} @click="mobileMenuOpen = false" class="text-sm text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.caraPembelian}</a>
         <a href={`${prefix}/#kontak`} @click="mobileMenuOpen = false" class="text-sm text-ink-soft hover:text-ink transition-colors duration-150">{t.nav.kontak}</a>
@@ -383,7 +439,6 @@ const t = translations[lang];
                   <div class="flex justify-between items-center py-3 border-b border-line last:border-0">
                     <div>
                       <h4 class="text-sm font-medium text-ink" x-text="item.name"></h4>
-                      <p class="text-xs text-ink-soft mt-0.5" x-text="'Rp ' + item.price.toLocaleString('id-ID')"></p>
                     </div>
                     <div class="flex flex-col items-end gap-2">
                       <div class="flex items-center gap-1 border border-line rounded-full px-1 py-1">
@@ -410,11 +465,6 @@ const t = translations[lang];
 
               <!-- Footer & Checkout -->
               <div x-ref="drawerFooter" class="px-6 py-6 border-t border-line overflow-y-auto max-h-[62vh] space-y-5">
-                <div class="flex justify-between items-baseline">
-                  <span class="text-sm text-ink-soft" x-text="i18n.cart.total"></span>
-                  <span class="text-lg font-semibold text-ink" x-text="'Rp ' + totalPrice.toLocaleString('id-ID')"></span>
-                </div>
-
                 <button
                   @click="checkoutWhatsApp"
                   :disabled="items.length === 0 || isSubmitting"
@@ -601,10 +651,6 @@ const t = translations[lang];
             return this.items.reduce((sum, item) => sum + item.qty, 0);
           },
 
-          get totalPrice() {
-            return this.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-          },
-
           showToast(message, type = 'success') {
             clearTimeout(this._toastTimeout);
             this.toast = { show: true, message, type };
@@ -696,10 +742,9 @@ const t = translations[lang];
           buildWhatsappMessage() {
             let text = this.i18n.wa.greetingTemplate.replace('{orderId}', this.currentOrderId) + '\n\n';
             this.items.forEach((item, index) => {
-              text += `${index + 1}. ${item.name} (${item.qty}x) - Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n`;
+              text += `${index + 1}. ${item.name} (${item.qty}x)\n`;
             });
-            text += `\n*${this.i18n.wa.total}: Rp ${this.totalPrice.toLocaleString('id-ID')}*`;
-            text += `\n\n${this.i18n.wa.footer}`;
+            text += `\n${this.i18n.wa.footer}`;
             return text;
           },
 
@@ -798,15 +843,15 @@ const t = translations[lang];
 
             let orderDetails = "";
             this.items.forEach((item, index) => {
-              orderDetails += `${index + 1}. ${item.name} (${item.qty}x) - Rp ${(item.price * item.qty).toLocaleString('id-ID')}\n`;
+              orderDetails += `${index + 1}. ${item.name} (${item.qty}x)\n`;
             });
 
             const formData = {
-              access_key: "7d899f37-b1be-4f36-8f21-0c733a7dff6c",
+              access_key: "b77293ae-c4de-4327-b154-33f4b31fd50e",
               subject: "Pesanan Baru dari " + this.customerName + " (" + this.currentOrderId + ")",
               from_name: "Web Katalog Drone",
               replyto: this.customerEmail,
-              message: `Nomor Pesanan: ${this.currentOrderId}\n\nDetail Pemesan:\nNama: ${this.customerName}\nEmail: ${this.customerEmail}\nNo. HP: ${this.customerPhone || '-'}\n\nDetail Pesanan:\n${orderDetails}\nTotal Tagihan: Rp ${this.totalPrice.toLocaleString('id-ID')}`
+              message: `Nomor Pesanan: ${this.currentOrderId}\n\nDetail Pemesan:\nNama: ${this.customerName}\nEmail: ${this.customerEmail}\nNo. HP: ${this.customerPhone || '-'}\n\nDetail Pesanan:\n${orderDetails}`
             };
 
             try {
@@ -823,7 +868,7 @@ const t = translations[lang];
 
               if (result.success) {
                 this.lastSubmittedEmail = this.customerEmail;
-                this.lastOrderMessage = `${this.i18n.wa.emailFollowupTemplate.replace('{email}', this.customerEmail).replace('{orderId}', this.currentOrderId)}\n\n${orderDetails}\n*${this.i18n.wa.total}: Rp ${this.totalPrice.toLocaleString('id-ID')}*\n\n${this.i18n.wa.confirmFooter}`;
+                this.lastOrderMessage = `${this.i18n.wa.emailFollowupTemplate.replace('{email}', this.customerEmail).replace('{orderId}', this.currentOrderId)}\n\n${orderDetails}\n${this.i18n.wa.confirmFooter}`;
                 this.saveLastOrder('Email');
                 this.emailStatus = 'success';
                 this.items = [];

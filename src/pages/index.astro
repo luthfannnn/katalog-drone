@@ -6,6 +6,10 @@ import Footer from '../components/Footer.astro';
 // Deteksi bahasa dari URL (jika URL ada /en, maka pakai bahasa inggris, sisanya indonesia)
 const lang = Astro.url.pathname.startsWith('/en') ? 'en' : 'id';
 
+// Flag untuk menampilkan / menyembunyikan Katalog Software.
+// Ubah menjadi true jika ingin ditampilkan kembali.
+const showSoftware = false;
+
 // Dictionary / Kamus Data
 const translations = {
   id: {
@@ -24,6 +28,11 @@ const translations = {
       desc: "Spesifikasi lengkap tiap drone dalam koleksi kami.",
       specTitle: "Spesifikasi Teknis"
     },
+    softwareSection: {
+      title: "Katalog Software",
+      desc: "Lengkapi armada drone Anda dengan software pendukung siap pakai, dari manajemen armada hingga pelacakan pengiriman.",
+      featTitle: "Fitur Utama"
+    },
     howToBuy: {
       title: "Cara Pembelian",
       desc: "Proses belanja yang sederhana, dari pilih drone sampai barang sampai di tangan Anda."
@@ -33,13 +42,14 @@ const translations = {
       desc: "Tim kami siap membantu pertanyaan seputar produk, ketersediaan stok, hingga garansi.",
       waDesc: "Respons tercepat, biasanya dalam beberapa jam.",
       emailDesc: "Cocok untuk pertanyaan detail atau permintaan penawaran.",
-      hours: "Jam operasional: Senin–Jumat, 09.00–18.00 WIB"
+      hours: "Jam operasional: Senin–Jumat, 07.30–16.00 WIB"
     },
     buttons: {
       viewDetail: "Lihat detail",
       addCart: "Tambah ke Keranjang",
       buyNow: "Beli Sekarang",
-      viewFull: "Lihat sebagai halaman penuh"
+      viewFull: "Lihat sebagai halaman penuh",
+      contactPrice: "Hubungi kami untuk harga"
     },
     drones: [
       { id: "drone-sterna", 
@@ -71,7 +81,19 @@ const translations = {
         price: 0, 
         image: "/images/drone-sterna.png", 
         desc: "Sterna Mark I adalah sistem terintegrasi penuh untuk menghasilkan point cloud 3D yang dioptimalkan untuk survei lahan, konstruksi, minyak & gas, serta pertambangan. Dikembangkan oleh tim R&D drone terbaik Indonesia, Sterna adalah solusi end-to-end untuk kebutuhan survei LIDAR Anda.",
-        specs: ["Massa Kendaraan: 2950 gram", "Massa Muatan: 900 gram", "Kecepatan Naik: 7.5 m/s", "Kecepatan Jelajah: 12.0 m/s", "Gaya Dorong Puncak: 118 N", "Diameter: 1100 mm", "Tinggi: 495 mm"] },
+        specs: [
+          "Massa Kendaraan: 2950 gram",
+          "Massa Muatan: 900 gram",
+          "Kecepatan Naik: 7.5 m/s",
+          "Kecepatan Jelajah: 12.0 m/s",
+          "Gaya Dorong Puncak: 118 N",
+          "Diameter: 1100 mm",
+          "Tinggi: 495 mm",
+          "Take Off Weight (TOW): 6505 gram",
+          "Suhu Operasional Sistem: -10 °C hingga 50 °C",
+          "Akurasi LiDAR Point Cloud: H: 6 cm / V: 6 cm",
+          "Akurasi Photogrammetry: H: 1-2 pixel / V: 3-4 pixel"
+] },
       { id: "drone-mediterania", 
         name: "Drone Mediterania", 
         price: 0, 
@@ -89,11 +111,60 @@ const translations = {
         price: 0, 
         image: "/images/drone-vtol.png", 
         desc: "Drone bertipe fixed-wing (bersayap tetap) yang ditambahkan baling-baling kecil (quadcopter) untuk kemampuan lepas landas dan mendarat secara vertikal (Vertical Take-Off and Landing).", 
-        specs: ["Berat: - ", "Kamera: -", "Waktu Terbang: -", "Sensor Tabrak: -", "Jarak Transmisi: -"] 
+        specs: [ "Misi: Monitoring dan Inspeksi","Persyaratan Payload: Optical Camera","Persyaratan Performa (Range and Endurance): Endurance >15 menit, Range >7 km","Persyaratan Kinerja: Sudut stall <18°","Berat Struktur: <2000 gram","Persyaratan Otonomi: CG berada pada Centre Quad VTOL","Konfigurasi: Quad-Plane VTOL","Manufaktur: 3D Printing"]
+      }
+    ],
+    software: [
+      {
+        id: "software-fleet-management",
+        name: "Management Dashboard",
+        price: 0,
+        image: "/images/fleet-management-system.png",
+        desc: "Pantau dan kelola seluruh armada drone Anda dari satu dashboard terpusat, tanpa perlu cek satu per satu."
+      },
+      {
+        id: "software-delivery-tracking",
+        name: "Delivery Tracking System",
+        price: 0,
+        image: "/images/delivery-tracking-system.png",
+        desc: "Lacak perjalanan pengiriman barang yang dibawa drone dari titik asal hingga tujuan, secara real-time."
+      },
+      {
+        id: "software-flight-time-calculator",
+        name: "Flight Time Calculator",
+        price: 0,
+        image: "/images/flight-time-calculator-system.png",
+        desc: "Hitung estimasi waktu terbang dan jarak tempuh drone berdasarkan kapasitas baterai, payload, dan kecepatan."
+      }
+    ],
+    softwareDetails: [
+      {
+        id: "software-fleet-management",
+        name: "Management Dashboard",
+        price: 0,
+        image: "/images/fleet-management-system.png",
+        desc: "Management Dashboard adalah software untuk memantau dan mengelola sekumpulan drone (armada) dalam satu tampilan terpusat. Cocok untuk operator atau admin yang mengelola banyak drone sekaligus dan butuh gambaran kondisi tiap unit secara real-time — mulai dari status baterai, lokasi, hingga jadwal maintenance — tanpa harus memeriksa satu per satu secara manual.",
+        specs: ["Live Tracking Multi-Drone: Ya", "Monitoring Baterai & Status: Real-time", "Peta Sebaran Armada: Global", "Notifikasi & Alert: Otomatis", "Riwayat Misi & Maintenance: Ya", "Manajemen Multi-Operator: Ya"]
+      },
+      {
+        id: "software-delivery-tracking",
+        name: "Delivery Tracking System",
+        price: 0,
+        image: "/images/delivery-tracking-system.png",
+        desc: "Delivery Tracking System memungkinkan Anda melacak status pengiriman barang yang dibawa oleh drone, dari titik keberangkatan hingga sampai ke tujuan — mirip fitur \"Lacak Paket\" pada layanan ekspedisi, namun dirancang khusus untuk pengiriman berbasis drone. Cocok digunakan bersama drone kargo seperti Drone Mediterania untuk pengiriman sampel medis antar fasilitas kesehatan secara cepat dan terpantau.",
+        specs: ["Lacak Status Pengiriman: Real-time", "Estimasi Waktu Tiba (ETA): Ya", "Notifikasi Tiap Tahap: Ya", "Riwayat & Bukti Pengiriman: Ya", "Integrasi Multi-Drone: Ya", "Peta Rute Pengiriman: Ya"]
+      },
+      {
+        id: "software-flight-time-calculator",
+        name: "Flight Time Calculator",
+        price: 0,
+        image: "/images/flight-time-calculator-system.png",
+        desc: "Flight Time Calculator adalah software ringan untuk menghitung estimasi waktu terbang atau jarak tempuh drone berdasarkan kapasitas baterai (mAh), berat payload, dan kecepatan jelajah. Cukup masukkan angka pada form, dan hasil estimasi langsung muncul — praktis untuk perencanaan misi sebelum drone diterbangkan.",
+        specs: ["Estimasi Waktu Terbang: Ya", "Estimasi Jarak Tempuh: Ya", "Input Baterai & Payload: Ya", "Hasil Perhitungan: Instan", "Kebutuhan Database: Tidak Ada", "Kompatibilitas: Semua Tipe Drone"]
       }
     ],
     steps: [
-      { title: "Pilih drone yang sesuai", desc: "Lihat spesifikasi dan harga tiap drone di katalog, lalu tambahkan ke keranjang." },
+      { title: "Pilih drone yang sesuai", desc: "Lihat spesifikasi tiap drone di katalog, lalu tambahkan ke keranjang." },
       { title: "Buka keranjang", desc: "Klik ikon keranjang di pojok kanan atas untuk melihat ringkasan pesanan." },
       { title: "Checkout via WhatsApp atau Email", desc: "Pilih salah satu cara checkout yang paling nyaman. WhatsApp langsung terhubung ke tim kami, atau isi form email untuk pesanan tertulis." },
       { title: "Konfirmasi ketersediaan & pembayaran", desc: "Tim kami akan menghubungi Anda dalam 1×24 jam untuk konfirmasi stok dan metode pembayaran." },
@@ -116,6 +187,11 @@ const translations = {
       desc: "Complete specifications for each drone in our collection.",
       specTitle: "Technical Specifications"
     },
+    softwareSection: {
+      title: "Software Catalog",
+      desc: "Equip your drone fleet with ready-to-use software, from fleet management to delivery tracking.",
+      featTitle: "Key Features"
+    },
     howToBuy: {
       title: "How to Buy",
       desc: "A simple shopping process, from choosing a drone until it reaches your hands."
@@ -131,7 +207,8 @@ const translations = {
       viewDetail: "View details",
       addCart: "Add to Cart",
       buyNow: "Buy Now",
-      viewFull: "View as full page"
+      viewFull: "View as full page",
+      contactPrice: "Contact us for pricing"
     },
     drones: [
       { id: "drone-sterna", 
@@ -151,7 +228,7 @@ const translations = {
         desc: "This drone features a boxy design with a black protective outer frame surrounding its light gray main body. Its enclosed and solid structure closely resembles an underwater drone (ROV - Remotely Operated Vehicle)." },
       { 
         id: "drone-vtol", 
-        name: "VTOL Drone", 
+        name: "Drone VTOL", 
         price: 0, 
         image: "/images/drone-vtol.png", 
         desc: "This fixed-wing drone is equipped with additional small propellers that provide vertical take-off and landing capabilities (VTOL - Vertical Take-Off and Landing)." 
@@ -163,7 +240,19 @@ const translations = {
         price: 0, 
         image: "/images/drone-sterna.png", 
         desc: "Sterna Mark I is a fully integrated system for producing 3D point clouds optimized for land surveying, construction, oil & gas, and mining applications. Developed by Indonesia's best drone R & D team, Sterna is an end-to-end solution for your LIDAR survey.", 
-        specs: ["Vehicle Mass: 2950 g", "Payload Mass: 900 g", "Climb Rate: 7.5 m/s", "Cruising Speed: 12.0 m/s", "Peak Thrust: 118 N", "Diameter: 1100 mm", "Height: 495 mm"] },
+        specs: [
+          "Vehicle Mass: 2950 g",
+          "Payload Mass: 900 g",
+          "Climb Rate: 7.5 m/s",
+          "Cruising Speed: 12.0 m/s",
+          "Peak Thrust: 118 N",
+          "Diameter: 1100 mm",
+          "Height: 495 mm",
+          "Take Off Weight (TOW): 6505 g",
+          "System Operational Temperature: -10 °C to 50 °C",
+          "LiDAR Point Cloud Accuracy: H: 6 cm / V: 6 cm",
+          "Photogrammetry Accuracy: H: 1-2 pixels / V: 3-4 pixels"
+] },
       { id: "drone-mediterania", 
         name: "Drone Mediterania", 
         price: 0, 
@@ -177,15 +266,65 @@ const translations = {
         desc: "This drone features a boxy design with a black protective outer frame surrounding its light gray main body. Its enclosed and solid structure closely resembles an underwater drone (ROV - Remotely Operated Vehicle).", 
         specs: ["Range: 15–16 km", "Payload: 3–7 kg", "Rain Protection: Water-resistant", "Drone Data Monitoring System: Yes", "Energy Saving Optimization: Yes", "Time/Velocity Optimization: Yes", "Obstacle Avoidance: Yes (Camera)", "Soft Landing: Yes (IR-Lock Sensor)", "Communication: Telemetry", "Repeater: Yes", "Wind Disturbance Stability: Yes", "Emergency Recovery Safety: Yes (Safety Landing / Parachute System)", "Mechanical Failure Optimization: Yes", "Handling Cargo System: Yes", "Auto Charging to Dock System: Yes", "Multi Drone Path Optimization: Yes"] },
       { id: "drone-vtol", 
-        name: "VTOL Drone", 
+        name: "Drone VTOL", 
         price: 0, 
         image: "/images/drone-vtol.png", 
         desc: "This fixed-wing drone is equipped with additional small propellers that provide vertical take-off and landing capabilities (VTOL - Vertical Take-Off and Landing).", 
-        specs: ["Weight: -", "Camera: -", "Flight Time: -", "Collision Sensor: -", "Transmission Range: -"] 
+        specs: [ "Mission: Monitoring and Inspection","Payload Requirement: Optical Camera","Performance Requirement: Stall angle <18°","Structure Weight: <2000 grams","Autonomy Requirement: CG located at Centre of Quad VTOL","Configuration: Quad-Plane VTOL","Manufacturing: 3D Printing","Performance Requirement (Range and Endurance): Endurance >15 minutes, Range >7 km",
+]
+      }
+    ],
+    software: [
+      {
+        id: "software-fleet-management",
+        name: "Management Dashboard",
+        price: 0,
+        image: "/images/fleet-management-system.png",
+        desc: "Monitor and manage your entire drone fleet from one centralized dashboard, without checking each unit manually."
+      },
+      {
+        id: "software-delivery-tracking",
+        name: "Delivery Tracking System",
+        price: 0,
+        image: "/images/delivery-tracking-system.png",
+        desc: "Track the journey of goods carried by your drones from origin to destination, in real time."
+      },
+      {
+        id: "software-flight-time-calculator",
+        name: "Flight Time Calculator",
+        price: 0,
+        image: "/images/flight-time-calculator-system.png",
+        desc: "Calculate estimated flight time and distance based on battery capacity, payload, and speed."
+      }
+    ],
+    softwareDetails: [
+      {
+        id: "software-fleet-management",
+        name: "Management Dashboard",
+        price: 0,
+        image: "/images/fleet-management-system.png",
+        desc: "Management Dashboard is software for monitoring and managing a group of drones (a fleet) from a single centralized view. It's built for operators or admins running multiple drones at once who need a real-time picture of every unit's condition — battery status, location, and maintenance schedule — without checking each one manually.",
+        specs: ["Multi-Drone Live Tracking: Yes", "Battery & Status Monitoring: Real-time", "Fleet Distribution Map: Global", "Alerts & Notifications: Automatic", "Mission & Maintenance History: Yes", "Multi-Operator Management: Yes"]
+      },
+      {
+        id: "software-delivery-tracking",
+        name: "Delivery Tracking System",
+        price: 0,
+        image: "/images/delivery-tracking-system.png",
+        desc: "Delivery Tracking System lets you track the status of goods carried by drones, from departure point to destination — much like a \"Track Package\" feature from a courier service, but built specifically for drone-based delivery. It pairs well with cargo drones such as Drone Mediterania for fast, monitored delivery of medical samples between healthcare facilities.",
+        specs: ["Delivery Status Tracking: Real-time", "Estimated Time of Arrival (ETA): Yes", "Notifications per Stage: Yes", "Delivery History & Proof: Yes", "Multi-Drone Integration: Yes", "Delivery Route Map: Yes"]
+      },
+      {
+        id: "software-flight-time-calculator",
+        name: "Flight Time Calculator",
+        price: 0,
+        image: "/images/flight-time-calculator-system.png",
+        desc: "Flight Time Calculator is a lightweight tool for estimating flight time or travel distance based on battery capacity (mAh), payload weight, and cruising speed. Just enter the numbers into the form and get an instant estimate — handy for mission planning before a drone ever takes off.",
+        specs: ["Flight Time Estimation: Yes", "Distance Estimation: Yes", "Battery & Payload Input: Yes", "Calculation Result: Instant", "Database Required: None", "Compatibility: All Drone Types"]
       }
     ],
     steps: [
-      { title: "Select the right drone", desc: "Check the specifications and price of each drone in the catalog, then add to cart." },
+      { title: "Select the right drone", desc: "Check the specifications of each drone in the catalog, then add to cart." },
       { title: "Open cart", desc: "Click the cart icon in the top right corner to see your order summary." },
       { title: "Checkout via WhatsApp or Email", desc: "Choose the most comfortable checkout method. WhatsApp connects directly to our team, or fill out the email form for a written order." },
       { title: "Confirm availability & payment", desc: "Our team will contact you within 24 hours to confirm stock and payment methods." },
@@ -288,11 +427,7 @@ const data = translations[lang];
           <h3 class="text-[16px] md:text-[17px] font-semibold text-ink mb-1.5">{drone.name}</h3>
           <p class="text-ink-soft text-sm mb-5 md:mb-6 line-clamp-2 leading-relaxed">{drone.desc}</p>
 
-          <div class="mt-auto space-y-4">
-            <span class="block text-base font-semibold text-ink">
-              Rp {drone.price.toLocaleString('id-ID')}
-            </span>
-
+          <div class="mt-auto">
             <div class="flex items-center justify-between pt-1 gap-2">
               <a href={lang === 'en' ? `/en/${drone.id}` : `/${drone.id}`} class="text-accent text-sm font-medium flex items-center gap-1 group/link">
                 {data.buttons.viewDetail}
@@ -375,11 +510,7 @@ const data = translations[lang];
           </div>
 
           <div class="reveal py-2" style="transition-delay: 120ms">
-            <h3 class="text-xl sm:text-2xl md:text-[32px] font-semibold text-ink mb-3 tracking-tight leading-tight">{drone.name}</h3>
-
-            <div class="text-lg md:text-xl font-semibold text-ink mb-5 md:mb-6">
-              Rp {drone.price.toLocaleString('id-ID')}
-            </div>
+            <h3 class="text-xl sm:text-2xl md:text-[32px] font-semibold text-ink mb-5 md:mb-6 tracking-tight leading-tight">{drone.name}</h3>
 
             <p class="text-ink-soft text-base leading-relaxed mb-7 md:mb-8">
               {drone.desc}
@@ -395,11 +526,13 @@ const data = translations[lang];
                 <span>{data.buttons.addCart}</span>
               </button>
 
-              <button
-                @click={`buyNow({ id: '${drone.id}', name: '${drone.name}', price: ${drone.price} })`}
+              <a
+                href="https://wa.me/62881023652391"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="w-full sm:w-auto flex-1 bg-white hover:bg-mist text-ink border border-line px-7 py-3.5 rounded-full text-[15px] font-medium transition-all duration-150 flex items-center justify-center gap-2 active:scale-[0.98]">
-                <span>{data.buttons.buyNow}</span>
-              </button>
+                <span>{data.buttons.contactPrice}</span>
+              </a>
             </div>
 
             <div>
@@ -430,6 +563,127 @@ const data = translations[lang];
       ))}
     </div>
   </section>
+
+  {/* ===== Katalog Software (disembunyikan sementara, ubah showSoftware = true di atas untuk menampilkan) ===== */}
+  {showSoftware && (
+  <section id="katalog-software" class="scroll-mt-24 mt-20 md:mt-32 px-4 sm:px-0">
+    <div class="reveal text-center mb-12 md:mb-16 max-w-2xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-ink mb-4 md:mb-5 tracking-tight leading-[1.1] md:leading-[1.05]">
+        {data.softwareSection.title}
+      </h2>
+      <p class="text-ink-soft text-base md:text-lg leading-relaxed">
+        {data.softwareSection.desc}
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+      {data.software.map((sw, i) => (
+        <div
+          class="reveal bg-white group flex flex-col transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 hover:z-10 relative rounded-2xl"
+          style={`transition-delay: ${i * 120}ms`}
+        >
+
+          <a href={`#detail-${sw.id}`} class="block">
+            <ProductStage image={sw.image} alt={sw.name} />
+          </a>
+
+          <div class="p-5 md:p-7 flex flex-col flex-1">
+            <h3 class="text-[16px] md:text-[17px] font-semibold text-ink mb-1.5">{sw.name}</h3>
+            <p class="text-ink-soft text-sm mb-5 md:mb-6 line-clamp-2 leading-relaxed">{sw.desc}</p>
+
+            <div class="mt-auto flex items-center justify-between pt-1 gap-2">
+              <a href={`#detail-${sw.id}`} class="text-accent text-sm font-medium flex items-center gap-1 group/link">
+                {data.buttons.viewDetail}
+                <svg class="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+
+              <div class="relative group/tooltip shrink-0">
+                <button
+                  @click={`add({ id: '${sw.id}', name: '${sw.name}', price: ${sw.price} })`}
+                  class="w-9 h-9 flex items-center justify-center rounded-full border border-line text-ink hover:bg-ink hover:text-white hover:border-ink active:scale-95 transition-all duration-150"
+                  aria-label={`Tambah ${sw.name} ke keranjang`}>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                </button>
+                <span class="absolute bottom-full mb-2 right-0 bg-ink text-white text-[11px] font-medium py-1 px-2.5 rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity duration-200 shadow-md z-10">
+                  {data.buttons.addCart}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+  )}
+
+  {/* ===== Detail Software (disembunyikan sementara, ikut flag showSoftware) ===== */}
+  {showSoftware && (
+  <section class="mt-20 md:mt-32 px-4 sm:px-0">
+    <div class="space-y-16 md:space-y-32">
+      {data.softwareDetails.map((sw) => (
+        <div id={`detail-${sw.id}`} class="scroll-mt-24 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
+
+          <div class="reveal rounded-2xl overflow-hidden">
+            <ProductStage image={sw.image} alt={sw.name} />
+          </div>
+
+          <div class="reveal py-2" style="transition-delay: 120ms">
+            <h3 class="text-xl sm:text-2xl md:text-[32px] font-semibold text-ink mb-3 tracking-tight leading-tight">{sw.name}</h3>
+
+            <div class="text-sm font-medium text-ink-soft mb-5 md:mb-6">
+              {data.buttons.contactPrice}
+            </div>
+
+            <p class="text-ink-soft text-base leading-relaxed mb-7 md:mb-8">
+              {sw.desc}
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 mb-8 md:mb-10">
+              <button
+                @click={`add({ id: '${sw.id}', name: '${sw.name}', price: ${sw.price} })`}
+                class="w-full sm:w-auto flex-1 bg-ink hover:bg-black text-white px-7 py-3.5 rounded-full text-[15px] font-medium transition-all duration-150 flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>{data.buttons.addCart}</span>
+              </button>
+
+              <a
+                href="https://wa.me/62881023652391"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full sm:w-auto flex-1 bg-white hover:bg-mist text-ink border border-line px-7 py-3.5 rounded-full text-[15px] font-medium transition-all duration-150 flex items-center justify-center gap-2 active:scale-[0.98]">
+                <span>{data.buttons.contactPrice}</span>
+              </a>
+            </div>
+
+            <div>
+              <h4 class="text-[11px] font-medium text-ink-soft uppercase tracking-wider mb-1">{data.softwareSection.featTitle}</h4>
+              <div class="border-t border-line">
+                {sw.specs.map((spec) => {
+                  const [label, ...rest] = spec.split(':');
+                  const value = rest.join(':').trim();
+                  return (
+                    <div class="flex flex-wrap justify-between items-center gap-x-3 py-4 border-b border-line">
+                      <span class="text-sm text-ink-soft">{label.trim()}</span>
+                      <span class="text-sm font-medium text-ink text-right">{value}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      ))}
+    </div>
+  </section>
+  )}
 
   <section id="cara-pembelian" class="scroll-mt-24 mt-20 md:mt-32 px-4 sm:px-0">
     <div class="reveal text-center mb-12 md:mb-16 max-w-2xl mx-auto">
